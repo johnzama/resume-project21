@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Use the official Nginx image as the base image
 FROM nginx:latest
 
@@ -11,3 +12,8 @@ EXPOSE 8052
 # Start Nginx when the container launches
 CMD ["nginx", "-g", "daemon off;"]
 
+=======
+# Dockerfile
+FROM nginx:alpine
+COPY . /usr/share/nginx/html
+>>>>>>> d6e6463ae552f3e65336eda4b326bd4c8ad08d5b

@@ -1,37 +1,46 @@
 pipeline {
     agent any
 
+    environment {
+        SONARQUBE_SERVER = 'http://localhost:9000'
+        SONARQUBE_TOKEN = 'your-sonarqube-token'
+    }
+
     stages {
-        stage('Clone Repository') {
+        stage('Checkout') {
             steps {
                 git 'https://github.com/your-username/your-repo.git'
             }
         }
 
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                sh 'echo "Building the Resume Website"'
-                // Add any build steps here, if needed
+                script {
+                    docker.build('resume-website')
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh 'sonar-scanner -Dsonar.projectKey=resume-website -Dsonar.sources=. -Dsonar.host.url=$SONARQUBE_SERVER -Dsonar.login=$SONARQUBE_TOKEN'
+                }
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'echo "Deploying the Resume Website"'
-                // Add deployment steps here, e.g., copying files to a web server
+                script {
+                    docker.image('resume-website').run('-p 8080:80')
+                }
             }
         }
     }
 
     post {
         always {
-            echo 'Pipeline completed.'
-        }
-        success {
-            echo 'Pipeline succeeded.'
-        }
-        failure {
-            echo 'Pipeline failed.'
+            cleanWs()
         }
     }
 }
